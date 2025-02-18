@@ -1,28 +1,27 @@
 package com.example.proyectodivisas.worker
 
+import android.content.Context
+import android.util.Log
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import androidx.room.withTransaction
 import com.example.proyectodivisas.data.AppDatabase
 import com.example.proyectodivisas.data.TipoCambio
 import com.example.proyectodivisas.data.TipoCambioDetalle
 import com.example.proyectodivisas.retrofit.ExchangeRateService
-
-import android.content.Context
-import androidx.work.CoroutineWorker
-import androidx.work.WorkerParameters
-import androidx.room.withTransaction
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class ExchangeRateWorker(appContext: Context, workerParams: WorkerParameters) :
     CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        println("WorkManager: Iniciando sincronización...") // Mensaje de log
+        Log.d("WorkManager", "Iniciando sincronización...")
+
         return withContext(Dispatchers.IO) {
             try {
-                // Configura Retrofit y realiza la solicitud a la API
-                println("WorkManager: Realizando solicitud a la API...") // Mensaje de log
                 val retrofit = Retrofit.Builder()
                     .baseUrl("https://v6.exchangerate-api.com/")
                     .addConverterFactory(GsonConverterFactory.create())
@@ -34,11 +33,14 @@ class ExchangeRateWorker(appContext: Context, workerParams: WorkerParameters) :
                 if (response.isSuccessful) {
                     val exchangeRate = response.body()
                     if (exchangeRate != null) {
-                        println("WorkManager: Datos recibidos de la API") // Mensaje de log
+                        Log.d("WorkManager", "Datos recibidos de la API")
 
-                        // Guarda los datos en la base de datos
+                        // Log de los datos recibidos para depuración
+                        Log.d("WorkManager", "Datos de Tipo de Cambio: ${exchangeRate.conversion_rates}")
+
                         val db = AppDatabase.getDatabase(applicationContext)
                         db.withTransaction {
+                            // Insertar la entrada de TipoCambio
                             val id = db.tipoCambioDao().insertTipoCambio(
                                 TipoCambio(
                                     timeLastUpdate = exchangeRate.time_last_update_unix,
@@ -46,6 +48,8 @@ class ExchangeRateWorker(appContext: Context, workerParams: WorkerParameters) :
                                     baseCode = exchangeRate.base_code
                                 )
                             )
+
+                            // Crear la lista de detalles para cada tipo de cambio
                             val detalles = exchangeRate.conversion_rates.map { (codigo, valor) ->
                                 TipoCambioDetalle(
                                     idTipoCambio = id,
@@ -53,23 +57,27 @@ class ExchangeRateWorker(appContext: Context, workerParams: WorkerParameters) :
                                     valor = valor
                                 )
                             }
+
+                            // Insertar detalles en la base de datos
                             db.tipoCambioDao().insertDetalles(detalles)
+
+                            // Log para confirmar que se insertaron los detalles
+                            Log.d("WorkManager", "Detalles insertados: ${detalles.size} registros")
                         }
 
-                        println("WorkManager: Sincronización completada con éxito") // Mensaje de log
-                        Result.success()
+                        Log.d("WorkManager", "Sincronización completada con éxito")
+                        return@withContext Result.success()
                     } else {
-                        println("WorkManager: Respuesta de la API vacía") // Mensaje de log
-                        Result.failure()
+                        Log.e("WorkManager", "Respuesta de la API vacía")
+                        return@withContext Result.failure()
                     }
                 } else {
-                    println("WorkManager: Error en la respuesta de la API") // Mensaje de log
-                    Result.failure()
+                    Log.e("WorkManager", "Error en la respuesta de la API: ${response.code()}")
+                    return@withContext Result.failure()
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                println("WorkManager: Error durante la sincronización - ${e.message}") // Mensaje de log
-                Result.failure()
+                Log.e("WorkManager", "Error durante la sincronización: ${e.message}", e)
+                return@withContext Result.failure()
             }
         }
     }

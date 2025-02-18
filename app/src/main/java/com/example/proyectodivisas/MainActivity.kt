@@ -1,3 +1,4 @@
+
 package com.example.proyectodivisas
 
 import android.os.Bundle
@@ -23,9 +24,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Programa el Worker para que se ejecute cada 10 segundos (para pruebas)
+        // Programa el Worker para que se ejecute cada 1 hora
         val workRequest = PeriodicWorkRequestBuilder<ExchangeRateWorker>(
-            1, TimeUnit.HOURS // Intervalo de ejecución: 10 segundos
+            1, TimeUnit.HOURS
         ).build()
 
         WorkManager.getInstance(this).enqueue(workRequest)
@@ -34,7 +35,7 @@ class MainActivity : ComponentActivity() {
             ProyectoDivisasTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Sincronización programada cada 10 segundos",
+                        name = "Sincronización cada 1 hora",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
