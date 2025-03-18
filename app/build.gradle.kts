@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("kotlin-kapt")
+    id("kotlin-kapt") // Agrega este plugin para Room
 }
 
 android {
@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.proyectodivisas"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -49,8 +49,8 @@ android {
         }
     }
 }
+
 dependencies {
-    // Dependencias básicas
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -68,17 +68,35 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Room
-    implementation("androidx.room:room-runtime:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1") // Usa kapt para procesar anotaciones de Room
-    implementation("androidx.room:room-ktx:2.6.1") // Soporte para corrutinas
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
 
     // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
 
     // WorkManager
-    implementation("androidx.work:work-runtime-ktx:2.9.0") // Soporte para corrutinas
+    implementation(libs.androidx.work.runtime.ktx)
 
-    // Corrutinas
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+   // implementation("io.github.bytebeats:compose-charts:0.1.2")
+
+    implementation("androidx.compose.material3:material3:1.0.0")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.0.5")
+    implementation("androidx.compose.foundation:foundation:1.0.5")
+    implementation("androidx.compose.material:material-icons-extended:1.0.5")
+    //implementation("com.github.tehras:charts:0.2.3")
+
+    //implementation("com.github.tehras:charts:Tag")
+
+    //implementation("io.github.bytebeats:compose-charts:0.1.0")
+
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0") // MPAndroidChart
+
+
+
+
+
+    // Ejemplo de librería para gráficas
 }

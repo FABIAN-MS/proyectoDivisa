@@ -8,6 +8,7 @@ pluginManagement {
             }
         }
         mavenCentral()
+
         gradlePluginPortal()
     }
 }
@@ -16,9 +17,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") } // Necesario para Compose Charts
     }
 }
 
-rootProject.name = "proyectoDivisas"
+rootProject.name = "ProyectoDivisas"
 include(":app")
  
